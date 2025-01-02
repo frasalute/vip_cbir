@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pandas as pd
 import os
 import glob
 from sklearn.cluster import KMeans
@@ -27,6 +28,10 @@ def compute_bow_histogram(descriptors, kmeans_model):
     # Normalize histogram 
     bow_hist /= (bow_hist.sum() + 1e-7)
     return bow_hist
+
+def create_table (image_paths, labels, set_type, kmeans_model, sift_detector):
+    """ Create a table with BoW histograms for all images"""
+
 
 if __name__ == "__main__":
     # ---------------------------------------------------------------------
@@ -138,3 +143,40 @@ print("\nGrid search complete.")
 for k, acc in k_to_accuracy.items():
     print(f"k = {k} => accuracy = {acc:.4f}")
 print(f"\nBest k = {best_k} with accuracy = {best_accuracy:.4f}")
+
+# ---------------------------------------------------------------------
+# Results 
+"""Grid search complete.
+k = 500 => accuracy = 0.6511
+k = 550 => accuracy = 0.6532
+k = 600 => accuracy = 0.6511
+k = 650 => accuracy = 0.6574
+k = 700 => accuracy = 0.6681
+k = 750 => accuracy = 0.6596
+k = 800 => accuracy = 0.6468
+k = 850 => accuracy = 0.6596
+k = 900 => accuracy = 0.6617
+k = 950 => accuracy = 0.6489
+k = 1000 => accuracy = 0.6638
+k = 1050 => accuracy = 0.6532
+k = 1100 => accuracy = 0.6574
+k = 1150 => accuracy = 0.6638
+k = 1200 => accuracy = 0.6574
+k = 1250 => accuracy = 0.6660
+k = 1300 => accuracy = 0.6617
+k = 1350 => accuracy = 0.6468
+k = 1400 => accuracy = 0.6553
+k = 1450 => accuracy = 0.6617
+k = 1500 => accuracy = 0.6489
+k = 1550 => accuracy = 0.6404
+k = 1600 => accuracy = 0.6511
+k = 1650 => accuracy = 0.6404
+k = 1700 => accuracy = 0.6532
+k = 1750 => accuracy = 0.6404
+k = 1800 => accuracy = 0.6489
+k = 1850 => accuracy = 0.6468
+k = 1900 => accuracy = 0.6404
+k = 1950 => accuracy = 0.6553
+
+Best k = 700 with accuracy = 0.6681"""
+# ---------------------------------------------------------------------

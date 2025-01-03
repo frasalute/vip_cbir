@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 import glob
-import ast
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
@@ -94,7 +93,7 @@ max_desc = 100000
 if all_train_desc.shape[0] > max_desc:
     idx = np.random.choice(all_train_desc.shape[0], max_desc, replace=False)
     all_train_desc = all_train_desc[idx]
-"""
+
 # ---------------------------------------------------------------------
 # 3) Define Grid for k
 # ---------------------------------------------------------------------
@@ -158,48 +157,8 @@ for k, acc in k_to_accuracy.items():
 print(f"\nBest k = {best_k} with accuracy = {best_accuracy:.4f}")
 
 # ---------------------------------------------------------------------
-# Results 
-"""
-"""Grid search complete.
-k = 500 => accuracy = 0.6511
-k = 550 => accuracy = 0.6532
-k = 600 => accuracy = 0.6511
-k = 650 => accuracy = 0.6574
-k = 700 => accuracy = 0.6681
-k = 750 => accuracy = 0.6596
-k = 800 => accuracy = 0.6468
-k = 850 => accuracy = 0.6596
-k = 900 => accuracy = 0.6617
-k = 950 => accuracy = 0.6489
-k = 1000 => accuracy = 0.6638
-k = 1050 => accuracy = 0.6532
-k = 1100 => accuracy = 0.6574
-k = 1150 => accuracy = 0.6638
-k = 1200 => accuracy = 0.6574
-k = 1250 => accuracy = 0.6660
-k = 1300 => accuracy = 0.6617
-k = 1350 => accuracy = 0.6468
-k = 1400 => accuracy = 0.6553
-k = 1450 => accuracy = 0.6617
-k = 1500 => accuracy = 0.6489
-k = 1550 => accuracy = 0.6404
-k = 1600 => accuracy = 0.6511
-k = 1650 => accuracy = 0.6404
-k = 1700 => accuracy = 0.6532
-k = 1750 => accuracy = 0.6404
-k = 1800 => accuracy = 0.6489
-k = 1850 => accuracy = 0.6468
-k = 1900 => accuracy = 0.6404
-k = 1950 => accuracy = 0.6553
-
-Best k = 700 with accuracy = 0.6681"""
-
-
-
-# ---------------------------------------------------------------------
 # 6) Train KMeans with Best K and Create BoW Table
 # ---------------------------------------------------------------------
-best_k = 700
 print(f"\n[Training Final KMeans] Using best k = {best_k} ...")
 final_kmeans = KMeans(n_clusters=best_k, random_state=42, max_iter=500)
 final_kmeans.fit(all_train_desc)
@@ -216,9 +175,13 @@ bow_table.to_csv(output_file, index=False)
 print(f"BoW table saved to {output_file}")
 
 # ----------------------------------------------------------------------
-# 7) Mean Reciprocal Rank and Top 3 Accuracy
+# 7) Retrieving of Images
 # ----------------------------------------------------------------------
 
+# ----------------------------------------------------------------------
+# 8) Mean Reciprocal Rank and Top 3 Accuracy
+# ----------------------------------------------------------------------
+'''boh guardaci magari ho avuto un fever dream che volevo ottenere qua non so 
 def compute_similarity(query_hist, dataset_hists):
     """Compute similarity between a query histogram and dataset histograms."""
     similarities = cosine_similarity([query_hist], dataset_hists)
@@ -261,4 +224,4 @@ def evaluate_retrieval(test_table, train_table):
     top3_accuracy = (top3_count / total_queries) * 100
 
     return mrr, top3_accuracy
-
+'''

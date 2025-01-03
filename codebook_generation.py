@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 import os
 import glob
+import ast
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.metrics.pairwise import cosine_similarity
 
 def extract_sift_descriptors(img_path, sift_detector):
     """Extract SIFT descriptors from a single image."""
@@ -212,3 +214,51 @@ bow_table = pd.concat([train_table, val_table]) # combine train and validation t
 output_file = "bow_table.csv"
 bow_table.to_csv(output_file, index=False)
 print(f"BoW table saved to {output_file}")
+
+# ----------------------------------------------------------------------
+# 7) Mean Reciprocal Rank and Top 3 Accuracy
+# ----------------------------------------------------------------------
+
+def compute_similarity(query_hist, dataset_hists):
+    """Compute similarity between a query histogram and dataset histograms."""
+    similarities = cosine_similarity([query_hist], dataset_hists)
+    return similarities[0]  # Flatten to 1D array
+
+def evaluate_retrieval(test_table, train_table):
+    """Evaluate retrieval performance using MRR and Top-3 Accuracy."""
+    mrr = 0.0
+    top3_count = 0
+    total_queries = len(test_table)
+
+    # Use `bow_histogram` column directly as it already contains numeric arrays
+    train_hists = np.array([hist for hist in train_table['bow_histogram']])
+    train_categories = train_table['category'].values
+
+    for _, query_row in test_table.iterrows():
+        query_hist = query_row['bow_histogram']  # Directly use the histogram
+        query_category = query_row['category']
+
+        # Compute similarities to all training images
+        similarities = compute_similarity(query_hist, train_hists)
+
+        # Rank indices by similarity (higher is better for cosine similarity)
+        ranked_indices = np.argsort(-similarities)
+        ranked_categories = train_categories[ranked_indices]
+
+        # Find the rank of the first correct category
+        try:
+            rank = np.where(ranked_categories == query_category)[0][0] + 1  # Add 1 for 1-based rank
+            mrr += 1 / rank
+
+            # Check if the correct category is in the top 3
+            if query_category in ranked_categories[:3]:
+                top3_count += 1
+        except IndexError:
+            raise ValueError(f"No correct category found for query '{query_category}' in the ranked results.")
+
+    # Compute final metrics
+    mrr /= total_queries
+    top3_accuracy = (top3_count / total_queries) * 100
+
+    return mrr, top3_accuracy
+

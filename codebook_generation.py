@@ -31,7 +31,18 @@ def compute_bow_histogram(descriptors, kmeans_model):
 
 def create_table (image_paths, labels, set_type, kmeans_model, sift_detector):
     """ Create a table with BoW histograms for all images"""
+    data = []
 
+    for img_path, label in zip(image_paths, labels):
+        description = extract_sift_descriptors(img_path, sift_detector)
+        histogram = compute_bow_histogram(desc, kmeans_model)
+        data.append({
+            "image_name": os.path.basename(img_path),
+            "category": label, 
+            "type": set_type,
+            "bow_histogram": histogram
+        })
+    return pd.DataFrame(data)
 
 if __name__ == "__main__":
     # ---------------------------------------------------------------------
@@ -81,7 +92,7 @@ max_desc = 100000
 if all_train_desc.shape[0] > max_desc:
     idx = np.random.choice(all_train_desc.shape[0], max_desc, replace=False)
     all_train_desc = all_train_desc[idx]
-
+"""
 # ---------------------------------------------------------------------
 # 3) Define Grid for k
 # ---------------------------------------------------------------------
@@ -146,6 +157,7 @@ print(f"\nBest k = {best_k} with accuracy = {best_accuracy:.4f}")
 
 # ---------------------------------------------------------------------
 # Results 
+"""
 """Grid search complete.
 k = 500 => accuracy = 0.6511
 k = 550 => accuracy = 0.6532
@@ -179,4 +191,24 @@ k = 1900 => accuracy = 0.6404
 k = 1950 => accuracy = 0.6553
 
 Best k = 700 with accuracy = 0.6681"""
+
+
+
 # ---------------------------------------------------------------------
+# 6) Train KMeans with Best K and Create BoW Table
+# ---------------------------------------------------------------------
+best_k = 700
+print(f"\n[Training Final KMeans] Using best k = {best_k} ...")
+final_kmeans = KMeans(n_clusters=best_k, random_state=42, max_iter=500)
+final_kmeans.fit(all_train_desc)
+
+print("\n[CREATING BoW TABLE]")
+train_table = create_table(train_set, train_labels, "train", final_kmeans, sift)
+val_table = create_table(val_set, val_labels, "test", final_kmeans, sift)
+
+bow_table = pd.concat([train_table, val_table]) # combine train and validation tables
+
+# Save to CVS so can be consulted 
+output_file = "bow_table.csv"
+bow_table.to_csv(output_file, index=False)
+print(f"BoW table saved to {output_file}")

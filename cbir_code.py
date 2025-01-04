@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.metrics.pairwise import cosine_similarity
+import matplotlib.pyplot as plt
 
 def extract_sift_descriptors(img_path, sift_detector):
     """Extract SIFT descriptors from a single image."""
@@ -217,12 +218,61 @@ def run_retrieval_experiment_test(bow_table, measure_list):
         mrr, top3 = evaluate_retrieval(test_subset, train_subset, measure)
         print(f"[TEST]  Measure: {measure} => MRR={mrr:.4f}, Top-3={top3:.2f}%")
 
+def visualize_query_and_match(query_image_path, bow_table, kmeans_model, sift_detector, measure="cosine"):
+    """
+    Visualize a query image and its best-matching image.
+    """
+    # Extract query image descriptors and histogram
+    query_descriptors = extract_sift_descriptors(query_image_path, sift_detector)
+    query_histogram = compute_bow_histogram(query_descriptors, kmeans_model)
+
+    # Decide which histograms to use from the training set
+    if measure == "cosine":
+        train_hists = np.array([hist for hist in bow_table[bow_table["type"] == "train"]["bow_histogram_tfidf"]])
+    else:
+        train_hists = np.array([hist for hist in bow_table[bow_table["type"] == "train"]["bow_histogram"]])
+    train_image_names = bow_table[bow_table["type"] == "train"]["image_name"].values
+    train_categories = bow_table[bow_table["type"] == "train"]["category"].values
+
+    # Compute similarity scores
+    scores = compute_scores(query_histogram, train_hists, measure=measure)
+
+    # Get the index of the top match
+    top_match_index = np.argmax(scores)
+    top_match_image_name = train_image_names[top_match_index]
+    top_match_category = train_categories[top_match_index]
+
+    # Load the images
+    query_image = cv2.imread(query_image_path)
+    query_image = cv2.cvtColor(query_image, cv2.COLOR_BGR2RGB)  # Convert to RGB for display
+
+    top_match_image_path = os.path.join(data_dir, top_match_category, top_match_image_name)
+    top_match_image = cv2.imread(top_match_image_path)
+    top_match_image = cv2.cvtColor(top_match_image, cv2.COLOR_BGR2RGB)  # Convert to RGB for display
+
+    # Plot the query and top match
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.imshow(query_image)
+    plt.title("Query Image")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(top_match_image)
+    plt.title(f"Top Match (Category: {top_match_category})")
+    plt.axis("off")
+
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == "__main__":
     # ---------------------------------------------------------------------
     # 1) Gather Image Paths and Labels
     # ---------------------------------------------------------------------
     data_dir = '101_ObjectCategories'
-    categories = ['airplanes', 'anchor', 'butterfly', 'panda', 'wild_cat', 'starfish', 'ant', 'barrel', 'beaver', 'brain', 'faces', 'ferry', 'helicopter', 'laptop', 'llama', 'snoopy', 'chair', 'crab', 'elephant', 'wrench']
+    categories = ['airplanes', 'anchor', 'butterfly', 'panda', 'wild_cat', 'starfish', 'ant', 'barrel', 'beaver', 'brain', 'faces', 'ferry', 'helicopter', 'laptop', 'llama', 'snoopy', 'chair', 'crab', 'elephant', 'wrench'
+                  ]
     image_paths = []
     labels = []
     
@@ -362,6 +412,16 @@ if __name__ == "__main__":
 
     print("\n=== Retrieval on TEST images ===")
     run_retrieval_experiment_test(bow_table, measure_list)
+
+    # Visualize a query and its top match
+    query_image_path = val_set[0]  # Choose an example query image (from the validation set)
+    # Visualization for cosine similarity
+    visualize_query_and_match(query_image_path, bow_table, final_kmeans, sift, measure="cosine")
+    # Visualization for Bhattacharyya divergence
+    visualize_query_and_match(query_image_path, bow_table, final_kmeans, sift, measure="bhattacharyya")
+
+
+
 
 
 

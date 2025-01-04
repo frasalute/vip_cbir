@@ -17,11 +17,18 @@ This project implements a **Content-Based Image Retrieval (CBIR)** system based 
 
 ## Setup and Installation
 
-1. Install the required libraries:
+1. Clone the repository and navigate to the project directory:
    ```bash
-   pip install opencv-python numpy pandas scikit-learn
+   git clone <repository-url>
+   cd <repository-directory>
    ```
-2. Download the CalTech 101 dataset and extract it into the project root directory as `101_ObjectCategories`.
+
+2. Install the required libraries:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Download the CalTech 101 dataset and extract it into the project root directory as `101_ObjectCategories`.
 
 ---
 
@@ -98,3 +105,18 @@ Evaluates retrieval accuracy using the specified similarity measure.
 2. **Memory Issues**: Reduce `max_desc` or use fewer categories and images.
 3. **Slow Execution**: Limit the range of `k` values in grid search or use a subset of the dataset.
 
+---
+
+## Requirements
+
+This project depends on the following Python libraries:
+- `opencv-contrib-python>=4.5.0` (for SIFT and other advanced OpenCV features)
+- `numpy>=1.19.0` (for numerical computations)
+- `pandas>=1.1.0` (for data manipulation and table creation)
+- `scikit-learn>=0.24.0` (for k-means clustering and evaluation metrics)
+- `matplotlib>=3.3.0` (optional, for visualization purposes)
+
+To install these dependencies, use the provided `requirements.txt` file:
+```bash
+pip install -r requirements.txt
+```
